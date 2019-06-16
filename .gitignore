@@ -1,0 +1,9 @@
+#Folders
+__pycache__
+.vscode
+checkpoints
+data
+settings
+
+#Settings
+praw.ini
