@@ -3,39 +3,79 @@
     <head>
         <meta charset="UTF-8">
         <title>Vote Predictor</title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     </head>
 
     <body>
-        <h1>Reddit Comment Vote Predictor</h1>
+        <div class="container">
+            <div class="col-xs-1 text-center">
+                <div class="jumbotron bg-white">
+                    <h1>Reddit Comment Vote Predictor <img src="https://i.imgur.com/ws2kAA0.png" width="70px"></h1>
+                </div>
 
-        <div id="app">
-            <textarea v-model="comment" placeholder="Write comment here" rows="10" cols="80"></textarea>
-            
-            <div v-if="prediction">
-                I predict this comment would get {{ prediction }} votes on Reddit.
+                <div id="app">
+                    <textarea v-model="comment" placeholder="Write comment here" rows="5" cols="80"></textarea>
+                    <div v-if="predicting">
+                        <p class="lead">
+                            Predicting...
+                            <span class="spinner-border text-muted"></span>
+                        </p>
+                    </div>
+                    <div v-else>
+                        <div v-if="prediction != null">
+                            <p class="lead">
+                                I predict this comment would get
+                                <span v-if="prediction <= 0">
+                                    <span class="badge badge-danger">{{ prediction }}</span>
+                                </span>
+                                <span v-else>
+                                    <span v-if="prediction < 5">
+                                        <span class="badge badge-warning">{{ prediction }}</span>
+                                    </span>
+                                    <span v-else>
+                                        <span class="badge badge-success">{{ prediction }}</span>
+                                    </span>
+                                </span>
+                                votes on Reddit.
+                            </p>
+                        </div>
+                        <div v-else>
+                            <p class="lead">No prediction made yet.</p>
+                        </div>
+                    </div>
+                    <br>
+                    <button type="button" v-on:click="predict" class="btn btn-primary">Predict</button>
+                </div>
             </div>
-            <div v-else>
-                No prediction made yet.
+                
+            <br>
+
+            <div class="page-header">
+                <h2>How it works</h2>
             </div>
 
-            <button type="button" v-on:click="predict">Predict</button>
+            <p>
+                Write some text in the input above, then hit the "predict" button. 
+                My neural network will predict how many votes this comment would get 
+                on reddit. This prediction will then be displayed above. For the moment 
+                only plain text is supported.
+            </p>
+
+            <div class="page-header">
+                <h2>About</h2>
+            </div>
+
+            <p>
+                A neural network was fed thousands of top-level comments from reddit's 
+                most popular subreddits: todayilearned, worldnews, science, pics, gaming, 
+                IAmA, and videos. The neural network was trained to predict the number of 
+                votes a comment would get.
+            </p>
+
+            <p>
+                This app was created by reddit user <a href="https://www.reddit.com/user/thecomputerscientist/" target="_blank">thecomputerscientist</a>
+            </p>
         </div>
-
-        <h2>How it works</h2>
-        <p>
-            Write some text in the input above, then hit the "predict" button. 
-            My neural network will predict how many votes this comment would get 
-            on reddit. This prediction will then be displayed above. For the moment 
-            only plain text is supported.
-        </p>
-
-        <h2>About</h2>
-        <p>
-            A neural network was fed thousands of top-level comments from reddit's 
-            most popular subreddits, todayilearned, worldnews, science, pics, gaming, 
-            IAmA, and videos. The neural network was trained to predict the number of 
-            votes a comment would get.
-        </p>
     </body>
 
     <script src="https://cdn.jsdelivr.net/npm/vue"></script>

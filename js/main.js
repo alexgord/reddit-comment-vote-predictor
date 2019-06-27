@@ -5,12 +5,14 @@
         el: '#app',
         data: {
           comment: '',
-          prediction: null
+          prediction: null,
+          predicting: false
         },
         // define methods under the `methods` object
         methods: {
             predict: function (event)
             {
+                this.predicting = true;
                 console.log("Trying to make a prediction");
 
                 console.log("Text is: " + this.comment);
@@ -22,6 +24,7 @@
                     {
                         console.log(JSON.stringify(data));
                         this.prediction = data.prediction;
+                        this.predicting = false;
                     }) // JSON-string from `response.json()` call
                 .catch(error => console.error(error));
             }
