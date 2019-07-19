@@ -5,34 +5,66 @@
         el: '#app',
         data: {
           comment: '',
+          title: '',
+          subreddit: 0,
           prediction: null,
-          predicting: false
+          predicting: false,
+          commentnow: 1,
+          commentdatetime: null,
+          predictionerror: null
         },
-        // define methods under the `methods` object
         methods: {
             predict: function (event)
             {
                 this.predicting = true;
-                console.log("Trying to make a prediction");
+                time = null;
 
-                console.log("Text is: " + this.comment);
+                if(this.commentnow)
+                {
+                    time = (new Date()).getTime()/1000;
+                }
+                else
+                {
+                    time = (new Date(this.commentdatetime)).getTime()/1000;
+                }
                 
-                console.log("Answer from server is:")
-                
-                postData('/api/predict', {text: this.comment})
+                postData('/api/predict',
+                {time: time, title: this.title, text: this.comment,
+                    subreddit: parseInt(this.subreddit)})
                 .then(data => 
                     {
-                        console.log(JSON.stringify(data));
-                        this.prediction = data.prediction;
+                        if("error" in data)
+                        {
+                            this.predictionerror = data.error;
+                        }
+                        else
+                        {
+                            this.prediction = data.prediction;
+                        }
                         this.predicting = false;
-                    }) // JSON-string from `response.json()` call
+                    })
                 .catch(error => console.error(error));
             }
+        },
+        beforeMount()
+        {
+            getData(url = '/api/subreddits')
+            .then(data =>
+                {
+                    selectnode = document.getElementById("subreddits");
+                    data.forEach((item, index) =>
+                        {
+                            optionnode = document.createElement("option");
+                            optionnode.text = item;
+                            optionnode.value = index + 1;
+                            selectnode.add(optionnode);
+                        });
+                })
+            .catch(error => console.error(error));
         }
     });
 
     async function postData(url = '', data = {}) {
-        // Default options are marked with *
         const response = await fetch(url, {
             method: 'POST',
             mode: 'cors',
@@ -45,6 +77,21 @@
             referrer: 'no-referrer',
             body: JSON.stringify(data),
         });
-        return await response.json(); // parses JSON response into native Javascript objects 
+        return await response.json();
+    }
+
+    async function getData(url = '') {
+        const response = await fetch(url, {
+            method: 'GET',
+            mode: 'cors',
+            cache: 'no-cache',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            redirect: 'follow',
+            referrer: 'no-referrer'
+        });
+        return await response.json();
     }
 })();
