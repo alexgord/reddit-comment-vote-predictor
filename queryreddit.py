@@ -11,29 +11,38 @@ print("Scraping commencing...")
 
 total_comment_num = 0
 
+def extractInfoFromComment(comment, subreddit):
+    return    {
+        'id' : top_level_comment.id,
+        'text' : top_level_comment.body,
+        'score': top_level_comment.score,
+        'timepostedutc': top_level_comment.created_utc,
+        'submission_title' : submission.title,
+        'subreddit' : subreddit
+    }
+
 for subreddit_name in rd.subreddit_list:
     print("Gettings posts from: {}".format(subreddit_name))
     numposts = 0
     numcomments = 0
     comments = []
-    # assume you have a Reddit instance bound to variable `reddit`
     subreddit = reddit.subreddit(subreddit_name)
 
-    posts = subreddit.hot()
+    posts = subreddit.hot(limit=1000)
 
     for submission in posts:
         numposts += 1
         for top_level_comment in submission.comments:
-            if isinstance(top_level_comment, MoreComments) or top_level_comment.body == "[removed]":
+            if isinstance(top_level_comment, MoreComments) or top_level_comment.body == "[removed]" or top_level_comment.score_hidden:
                 continue
             numcomments += 1
-            comments += [{
-                            'id' : top_level_comment.id,
-                            'text' : top_level_comment.body,
-                            'score': top_level_comment.score,
-                            'timepostedutc': top_level_comment.created_utc,
-                            'submission_title' : submission.title
-                        }]
+            comments += [extractInfoFromComment(top_level_comment, subreddit_name)]
+        if not isinstance(top_level_comment, MoreComments) and top_level_comment.body != "[removed]"  and not top_level_comment.score_hidden:
+            for second_level_comment in top_level_comment.replies:
+                if isinstance(second_level_comment, MoreComments) or second_level_comment.body == "[removed]"  or second_level_comment.score_hidden:
+                    continue
+                numcomments += 1
+                comments += [extractInfoFromComment(second_level_comment, subreddit_name)]
 
     with open('data/comments_' + subreddit_name + '.json', 'w') as f:
         json.dump(comments, f)
