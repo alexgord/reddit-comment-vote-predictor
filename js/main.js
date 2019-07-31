@@ -9,14 +9,18 @@
           subreddit: 0,
           prediction: null,
           predicting: false,
+          predictingday: false,
+          showgraph: false,
           commentnow: 1,
           commentdatetime: null,
-          predictionerror: null
+          predictionerror: null,
+          predictionerrorday: null
         },
         methods: {
             predict: function (event)
             {
                 this.predicting = true;
+                this.predictingday = true;
                 time = null;
 
                 if(this.commentnow)
@@ -44,6 +48,30 @@
                         this.predicting = false;
                     })
                 .catch(error => console.error(error));
+
+                postData('/api/predict/day',
+                {time: time, title: this.title, text: this.comment,
+                    subreddit: parseInt(this.subreddit)})
+                .then(data => 
+                    {
+                        this.showgraph = true;
+                        this.predictingday = false;
+                        Vue.nextTick(function ()
+                        {
+                            if("error" in data)
+                            {
+                                this.predictionerrorday = data.error;
+                            }
+                            else
+                            {
+                                predictions = data.predictions;
+                                times = data.times.map(e => new Date(e * 1000).toLocaleTimeString("en-US", {hour: 'numeric', minute: 'numeric'}));
+
+                                drawGraph(predictions, times);
+                            }
+                        });
+                    })
+                .catch(error => console.error(error));
             }
         },
         beforeMount()
@@ -64,8 +92,54 @@
         }
     });
 
-    async function postData(url = '', data = {}) {
-        const response = await fetch(url, {
+    function drawGraph(predictions, times)
+    {
+        var trace1 = {
+            x: times,
+            y: predictions,
+            name: 'Votes over time',
+            type: 'scatter'
+          };
+          var data = [trace1];
+          var layout = {
+            title: {
+              text:'Predicted votes over the next 24 hours',
+              font: {
+                family: 'Courier New, monospace',
+                size: 24
+              },
+              xref: 'paper',
+              x: 0.05,
+            },
+            xaxis: {
+              title: {
+                text: 'Time',
+                font: {
+                  family: 'Courier New, monospace',
+                  size: 18,
+                  color: '#7f7f7f'
+                }
+              },
+            },
+            yaxis: {
+              title: {
+                text: 'Votes',
+                font: {
+                  family: 'Courier New, monospace',
+                  size: 18,
+                  color: '#7f7f7f'
+                }
+              }
+            }
+          };
+          
+          Plotly.newPlot('dailyplot', data, layout);
+    }
+
+    async function postData(url = '', data = {})
+    {
+        const response = await fetch(url,
+        {
             method: 'POST',
             mode: 'cors',
             cache: 'no-cache',
@@ -80,8 +154,10 @@
         return await response.json();
     }
 
-    async function getData(url = '') {
-        const response = await fetch(url, {
+    async function getData(url = '')
+    {
+        const response = await fetch(url,
+        {
             method: 'GET',
             mode: 'cors',
             cache: 'no-cache',

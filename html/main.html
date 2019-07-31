@@ -74,6 +74,26 @@
                         <div v-else>
                         </div>
                     </div>
+
+                    <div v-if="predictingday">
+                        <p class="lead">
+                            Getting predictions for the following 24 hours...
+                            <span class="spinner-border text-muted"></span>
+                        </p>
+                    </div>
+                    <div v-else>
+                        <div v-if="showgraph">
+                            <div id="dailyplot" style="width:900px;height:450px;margin: auto;"></div>
+                        </div>
+                        <div v-else>
+                        </div>
+
+                        <div v-if="predictionerrorday">
+                            <p class="text-danger">{{ predictionerrorday }}</p>
+                        </div>
+                        <div v-else>
+                        </div>
+                    </div>
                     <br>
                     <div v-if="(commentnow != 0 || (commentdatetime != null && commentdatetime != '')) && comment != '' && title != '' && subreddit != 0">
                         <button type="button" v-on:click="predict" class="btn btn-primary">Predict</button>
@@ -96,8 +116,9 @@
                 your comment would be written to, then enter the title of the post you are commenting on, 
                 and finally, enter the comment itself, then hit the "predict" button that appears. A neural 
                 network will predict how many votes this comment would get on reddit using the context you 
-                have entered. This prediction will then be displayed above. For the moment, only plain text 
-                is supported.
+                have entered. This prediction will then be displayed above. A graph will also be displayed 
+                that will contain the predictions over the next 24 hours after the specified time. For the 
+                moment, only plain text is supported.
             </p>
 
             <div class="page-header">
@@ -123,5 +144,6 @@
     </body>
 
     <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="../js/main.js"></script>
 </html>
