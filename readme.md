@@ -50,9 +50,14 @@ Here is an example CURL command that requests a prediction:
 curl -X POST http://www.votepredictor.com/api/predict --data "{\"time\": 1563314096, \"title\": \"some title\", \"text\": \"some text\", \"subreddit\": 1}" --header "Content-Type: application/json"
 ```
 
+Similarly, `http://www.votepredictor.com/api/predict` can be used in the exact same way to return 
+the predictions over the next 24 hours.
+
 ## Future work
 
 * I plan to have this tool automatically update the neural network with new comments on 
 reddit so it can continue to learn.
 * I plan to create a chrome plugin that automatically informs users of the tool's 
-prediction when they write a top-level comment on reddit.
+prediction when they write a top-level comment on Reddit.
+* I plan to create a second neural network to complement the first I created. This 
+neural network will generate text based on the most highly voted Reddit comments.

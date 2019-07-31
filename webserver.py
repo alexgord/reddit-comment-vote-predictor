@@ -16,7 +16,7 @@ def subreddit_task():
     return jsonify(rd.subreddit_list)
 
 @app.route('/api/predict', methods=['POST'])
-def post_tasks():
+def post_predict():
     answer = {}
     content = request.json
     if 'time' in content and 'title' in content and 'text' in content and 'subreddit' in content:
@@ -27,6 +27,25 @@ def post_tasks():
         if subreddit[0] > 0 and subreddit[0] < len(rd.subreddit_list):
             predictions = rm.getprediction(model, title, time, subreddit, text)
             answer = {"prediction": predictions[0]}
+        else:
+            answer = {"error": "Subreddit must be an integer between 1 and " + str(len(rd.subreddit_list))}
+    else:
+        answer = {"error": "Missing one or more fields. Please provide time, title, text, and subreddit"}
+    return jsonify(answer)
+
+@app.route('/api/predict/day', methods=['POST'])
+def post_predict_day():
+    answer = {}
+    content = request.json
+    if 'time' in content and 'title' in content and 'text' in content and 'subreddit' in content:
+        time = content['time']
+        title = content['title']
+        text = content['text']
+        subreddit = content['subreddit']
+        if subreddit > 0 and subreddit < len(rd.subreddit_list):
+            titles, times, subreddits, texts = rd.dailydata(title, time, subreddit, text)
+            predictions = rm.getprediction(model, titles, times, subreddits, texts)
+            answer = {"times": times, "predictions": predictions}
         else:
             answer = {"error": "Subreddit must be an integer between 1 and " + str(len(rd.subreddit_list))}
     else:
