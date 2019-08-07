@@ -40,7 +40,7 @@
                     <br/>
 
                     Comment text:<br/>
-                    <div id="commenttext" contenteditable v-on:keyup="generate"></div>
+                    <div id="commenttext" contenteditable v-on:keyup="generate" v-on:keydown="commentkeydown"></div>
                     <div v-if="predicting">
                         <p class="lead">
                             Predicting...
