@@ -1,0 +1,17 @@
+#suggestion
+{
+    color: gray;
+    font-style: italic;
+}
+
+#commenttext
+{
+    margin-right: auto;
+    margin-left: auto;
+    text-align: left;
+    border-style: solid;
+    border-width: 1px;
+    border-color: #aaaaaa;
+    height: 200px;
+    width: 600px;
+}
