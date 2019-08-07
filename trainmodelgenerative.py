@@ -7,22 +7,30 @@ import numpy as np
 import os
 import pickle
 
-comments = []
+totalcomments = 0
+highlyvotedcomments = []
 for subreddit_name in rd.subreddit_list:
     comments_file = 'data/comments_' + subreddit_name + '.json'
     with open(comments_file, 'r') as f:
         newcomments = json.load(f)
-        comments = comments + newcomments
+        totalcomments += len(newcomments)
+        highlyvotedcomments += [comment for comment in newcomments if comment['score'] > rmg.HIGHLY_VOTED_COMMENT_MINIMUM]
 
-highlyvotedcomments = [comment for comment in comments if comment['score'] > rmg.HIGHLY_VOTED_COMMENT_MINIMUM]
-
-print("Number of comments: {}".format(len(comments)))
+print("Number of comments: {}".format(totalcomments))
 print("Number of comments with score at least {}: {}".format(rmg.HIGHLY_VOTED_COMMENT_MINIMUM, len(highlyvotedcomments)))
-print("{}% of comments have score at least {}".format(len(highlyvotedcomments)/len(comments)*100, rmg.HIGHLY_VOTED_COMMENT_MINIMUM))
+print("{}% of comments have score at least {}".format(len(highlyvotedcomments)/totalcomments*100, rmg.HIGHLY_VOTED_COMMENT_MINIMUM))
 
 text = ""
 for comment in highlyvotedcomments:
     text += "\n" + comment['text']
+
+commentchunks = [list(e) for e in np.array_split(np.array(highlyvotedcomments),10)]
+textchunks = []
+for commentchunk in commentchunks:
+    textchunk = ""
+    for comment in commentchunk:
+        textchunk += "\n" + comment['text']
+    textchunks += [textchunk]
 
 vocab = sorted(set(text))
 
@@ -53,32 +61,33 @@ f.close()
 
 print("Saved vocab to disk")
 
-text_as_int = np.array([char2idx[c] for c in text])
-
-examples_per_epoch = len(text)//rmg.seq_length
-
-# Create training examples / targets
-char_dataset = tf.data.Dataset.from_tensor_slices(text_as_int)
-
-sequences = char_dataset.batch(rmg.seq_length+1, drop_remainder=True)
-
-dataset = sequences.map(rmg.split_input_target)
-
-dataset = dataset.shuffle(rmg.BUFFER_SIZE).batch(rmg.BATCH_SIZE, drop_remainder=True)
-
 model.summary()
 
 model.compile(
     optimizer = keras.optimizers.Adam(),
     loss = rmg.loss)
 
-# Name of the checkpoint files
-checkpoint_prefix = os.path.join(rmg.checkpoint_dir, "ckpt_{epoch}")
+for textchunk in textchunks:
+    text_as_int = np.array([char2idx[c] for c in textchunk])
 
-checkpoint_callback=keras.callbacks.ModelCheckpoint(
-    filepath=checkpoint_prefix,
-    save_weights_only=True)
+    examples_per_epoch = len(textchunk)//rmg.seq_length
 
-steps_per_epoch = examples_per_epoch//rmg.BATCH_SIZE
+    # Create training examples / targets
+    char_dataset = tf.data.Dataset.from_tensor_slices(text_as_int)
 
-history = model.fit(dataset.repeat(), epochs=rmg.EPOCHS, steps_per_epoch=steps_per_epoch, callbacks=[checkpoint_callback])
+    sequences = char_dataset.batch(rmg.seq_length+1, drop_remainder=True)
+
+    dataset = sequences.map(rmg.split_input_target)
+
+    dataset = dataset.shuffle(rmg.BUFFER_SIZE).batch(rmg.BATCH_SIZE, drop_remainder=True)
+
+    # Name of the checkpoint files
+    checkpoint_prefix = os.path.join(rmg.checkpoint_dir, "ckpt_{epoch}")
+
+    checkpoint_callback=keras.callbacks.ModelCheckpoint(
+        filepath=checkpoint_prefix,
+        save_weights_only=True)
+
+    steps_per_epoch = examples_per_epoch//rmg.BATCH_SIZE
+
+    history = model.fit(dataset.repeat(), epochs=rmg.EPOCHS, steps_per_epoch=steps_per_epoch, callbacks=[checkpoint_callback])

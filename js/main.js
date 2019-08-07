@@ -14,7 +14,8 @@
           commentnow: 1,
           commentdatetime: null,
           predictionerror: null,
-          predictionerrorday: null
+          predictionerrorday: null,
+          generatedtext: ''
         },
         methods: {
             predict: function (event)
@@ -35,7 +36,7 @@
                 postData('/api/predict',
                 {time: time, title: this.title, text: this.comment,
                     subreddit: parseInt(this.subreddit)})
-                .then(data => 
+                .then(data =>
                     {
                         if("error" in data)
                         {
@@ -52,7 +53,7 @@
                 postData('/api/predict/day',
                 {time: time, title: this.title, text: this.comment,
                     subreddit: parseInt(this.subreddit)})
-                .then(data => 
+                .then(data =>
                     {
                         this.showgraph = true;
                         this.predictingday = false;
@@ -72,6 +73,51 @@
                         });
                     })
                 .catch(error => console.error(error));
+            },
+            insertsuggestion: function()
+            {
+                removeSuggestion();
+
+                var generatedtextfixedspaces = this.generatedtext.replace(/\s/g, " ");
+                var commentfixedspaces = this.comment.replace(/\s/g, " ");
+
+                if(generatedtextfixedspaces && generatedtextfixedspaces.startsWith(commentfixedspaces))
+                {
+                    var commenttextarea=document.getElementById('commenttext');
+                    var suggestionspan = document.createElement("span");
+                    var addition = this.generatedtext.slice(this.comment.length);
+                    suggestionspan.id = "suggestion";
+                    suggestionspan.append(document.createTextNode(addition));
+                    commenttextarea.append(suggestionspan);
+                }
+            },
+            generate: function(event)
+            {
+                removeSuggestion();
+
+                var commenttextarea=document.getElementById('commenttext');
+
+                this.comment = commenttextarea.innerText
+
+                if(this.comment.replace(/\s/g, '').length)
+                {
+                    this.insertsuggestion();
+                }
+
+                if(event.code == "Space")
+                {
+                    postData('/api/generate',
+                    {text: this.comment})
+                    .then(data =>
+                        {
+                            if(!("error" in data))
+                            {
+                                this.generatedtext = data.generated_text;
+                                this.insertsuggestion();
+                            }
+                        })
+                    .catch(error => console.error(error));
+                }
             }
         },
         beforeMount()
@@ -91,6 +137,15 @@
             .catch(error => console.error(error));
         }
     });
+
+    function removeSuggestion()
+    {
+        var elem = document.getElementById("suggestion");
+        if(elem)
+        {
+            elem.parentNode.removeChild(elem);
+        }
+    }
 
     function drawGraph(predictions, times)
     {
