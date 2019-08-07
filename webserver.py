@@ -59,7 +59,7 @@ def post_predict():
         title = [content['title']]
         text = [content['text']]
         subreddit = [content['subreddit']]
-        if subreddit[0] > 0 and subreddit[0] < len(rd.subreddit_list):
+        if subreddit[0] > 0 and subreddit[0] <= len(rd.subreddit_list):
             predictions = rm.getprediction(model, title, time, subreddit, text)
             answer = {"prediction": predictions[0]}
         else:
@@ -77,7 +77,7 @@ def post_predict_day():
         title = content['title']
         text = content['text']
         subreddit = content['subreddit']
-        if subreddit > 0 and subreddit < len(rd.subreddit_list):
+        if subreddit > 0 and subreddit <= len(rd.subreddit_list):
             titles, times, subreddits, texts = rd.dailydata(title, time, subreddit, text)
             predictions = rm.getprediction(model, titles, times, subreddits, texts)
             answer = {"times": times, "predictions": predictions}
