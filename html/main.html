@@ -118,8 +118,9 @@
                 and finally, enter the comment itself, then hit the "predict" button that appears. A neural 
                 network will predict how many votes this comment would get on reddit using the context you 
                 have entered. This prediction will then be displayed above. A graph will also be displayed 
-                that will contain the predictions over the next 24 hours after the specified time. For the 
-                moment, only plain text is supported.
+                that will contain the predictions over the next 24 hours after the specified time. Additionally, 
+                every time a space is entered in the comment, a request is sent to generate text to complete 
+                the sentence based on highly voted comments. For the moment, only plain text is supported.
             </p>
 
             <div class="page-header">
@@ -130,7 +131,8 @@
                 A neural network was fed thousands of top-level and second-level comments 
                 from reddit's most popular subreddits: todayilearned, worldnews, science, 
                 pics, gaming, IAmA, and videos. The neural network was trained to predict 
-                the number of votes a comment would get.
+                the number of votes a comment would get. Another neural network was trained 
+                with a subset of these comments that were highly voted to generate text.
             </p>
 
             <p>
