@@ -36,7 +36,7 @@ vocab_size = len(vocab)
 #Model which generates text
 modelgenerative = rmg.getmodel(vocab_size = vocab_size, embedding_dim=rmg.embedding_dim, rnn_units=rmg.rnn_units, batch_size=1)
 
-modelgenerative.load_weights(tf.train.latest_checkpoint(rmg.checkpoint_dir))
+modelgenerative.load_weights(rmg.checkpoint_dir)
 
 modelgenerative.build(tf.TensorShape([1, None]))
 

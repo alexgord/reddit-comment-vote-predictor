@@ -7,6 +7,8 @@ import numpy as np
 import os
 import pickle
 
+NUM_CHUNKS = 1
+
 totalcomments = 0
 highlyvotedcomments = []
 for subreddit_name in rd.subreddit_list:
@@ -24,7 +26,7 @@ text = ""
 for comment in highlyvotedcomments:
     text += "\n" + comment['text']
 
-commentchunks = [list(e) for e in np.array_split(np.array(highlyvotedcomments),10)]
+commentchunks = [list(e) for e in np.array_split(np.array(highlyvotedcomments),NUM_CHUNKS)]
 textchunks = []
 for commentchunk in commentchunks:
     textchunk = ""
@@ -81,13 +83,8 @@ for textchunk in textchunks:
 
     dataset = dataset.shuffle(rmg.BUFFER_SIZE).batch(rmg.BATCH_SIZE, drop_remainder=True)
 
-    # Name of the checkpoint files
-    checkpoint_prefix = os.path.join(rmg.checkpoint_dir, "ckpt_{epoch}")
-
-    checkpoint_callback=keras.callbacks.ModelCheckpoint(
-        filepath=checkpoint_prefix,
-        save_weights_only=True)
-
     steps_per_epoch = examples_per_epoch//rmg.BATCH_SIZE
 
-    history = model.fit(dataset.repeat(), epochs=rmg.EPOCHS, steps_per_epoch=steps_per_epoch, callbacks=[checkpoint_callback])
+    history = model.fit(dataset.repeat(), epochs=rmg.EPOCHS, steps_per_epoch=steps_per_epoch)
+
+model.save_weights(rmg.checkpoint_dir)
