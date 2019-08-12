@@ -37,6 +37,7 @@ comment_contexts = [[datetime.utcfromtimestamp(c['timepostedutc']).minute,
                         datetime.utcfromtimestamp(c['timepostedutc']).hour,
                         datetime.utcfromtimestamp(c['timepostedutc']).day,
                         datetime.utcfromtimestamp(c['timepostedutc']).month,
+                        rd.convertutctoweekdayint(c['timepostedutc']),
                         rd.convertsubreddittoint(c['subreddit'])] for c in comments]
 comment_texts = [c['text'] for c in comments]
 comment_scores = [c['score'] for c in comments]
@@ -53,6 +54,8 @@ comment_context_test = comment_contexts[:math.ceil(len(comment_contexts)*validat
 
 comment_score_train = comment_scores[math.floor(len(comment_scores)*trainpercentage):]
 comment_score_test = comment_scores[:math.ceil(len(comment_scores)*validationpercentage)]
+
+tf.enable_eager_execution()
 
 #Build the model
 model = rm.getmodel()
