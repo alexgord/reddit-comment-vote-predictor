@@ -15,9 +15,9 @@ def getmodel():
 
     # the first branch operates on the first input
     # This is the context of the comment, namely:
-    # minute, hour, day, month, subreddit
-    inputA = keras.Input(shape=(5,))
-    x = keras.layers.Dense(5, activation="relu")(inputA)
+    # minute, hour, day, month, weekday, subreddit
+    inputA = keras.Input(shape=(6,))
+    x = keras.layers.Dense(6, activation="relu")(inputA)
     x = keras.Model(inputs=inputA, outputs=x)
 
     # the second branch opreates on the second input
@@ -66,6 +66,7 @@ def getprediction(model, titles, times, subreddits, texts):
                 datetime.utcfromtimestamp(time).hour,
                 datetime.utcfromtimestamp(time).day,
                 datetime.utcfromtimestamp(time).month,
+                rd.convertutctoweekdayint(time),
                 subreddit] for time, subreddit in zip(times, subreddits)]
 
     return rd.removedecimals(rd.flatten(model.predict([contexts, titles, texts])))

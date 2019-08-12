@@ -1,6 +1,7 @@
 import json
 import math
 import operator
+from datetime import datetime
 
 MINUTES_BETWEEN_POSTS = 30
 SECONDS_IN_MINUTE = 60
@@ -11,9 +12,16 @@ SECONDS_IN_DAY = SECONDS_IN_MINUTE * MINUTES_IN_HOUR * HOURS_IN_DAY
 NUMBER_OF_POINTS = int(SECONDS_IN_DAY / (SECONDS_IN_MINUTE * MINUTES_BETWEEN_POSTS))
 
 subreddit_list = ['todayilearned', 'worldnews' ,'science', 'pics', 'gaming', 'IAmA', 'videos']
+weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
 def convertsubreddittoint(subreddit):
      return subreddit_list.index(subreddit) + 1
+
+def convertweekdaytostring(weekday):
+     return weekdays.index(weekday) + 1
+
+def convertutctoweekdayint(utctime):
+     return convertweekdaytostring(datetime.fromtimestamp(utctime).strftime("%A"))
 
 def flatten(arr):
     return [item for sublist in arr for item in sublist]
