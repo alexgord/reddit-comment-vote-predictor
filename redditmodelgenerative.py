@@ -27,7 +27,7 @@ rnn_units = 1024
 seq_length = 100
 
 # Directory where the checkpoints will be saved
-checkpoint_dir = './generator_training_checkpoints'
+checkpoint_dir = './generator_training_checkpoints/my_checkpoint'
 
 def split_input_target(chunk):
     input_text = chunk[:-1]
