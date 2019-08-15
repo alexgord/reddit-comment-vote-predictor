@@ -7,7 +7,7 @@ todayilearned, worldnews, science, pics, gaming, IAmA, videos.
 
 ## Requirements
 
-This tool was developed using TensorFlow 2.0
+This tool was developed using TensorFlow 1.4 and uses Flask to run the web server.
 
 ## Usage
 
