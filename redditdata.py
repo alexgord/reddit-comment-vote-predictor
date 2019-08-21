@@ -1,6 +1,7 @@
 import json
 import math
 import operator
+import praw
 from datetime import datetime
 
 MINUTES_BETWEEN_POSTS = 30
@@ -43,3 +44,13 @@ def dailydata(title, time, subreddit, text):
      texts = [text] * NUMBER_OF_POINTS
 
      return titles, times, subreddits, texts
+
+def extractInfoFromComment(comment, submission, subreddit):
+     return    {
+         'id' : comment.id,
+         'text' : comment.body,
+         'score': comment.score,
+         'timepostedutc': comment.created_utc,
+         'submission_title' : submission.title,
+         'subreddit' : subreddit
+     }
