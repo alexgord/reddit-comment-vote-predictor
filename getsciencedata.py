@@ -42,6 +42,8 @@ print("\n\nScraping commencing...")
 
 POSTS_LIMIT = 1000
 
+MAX_COMMENT_LEN = 10000
+
 total_comment_num = 0
 
 subreddit_name = 'science'
@@ -68,12 +70,18 @@ def retrieveComments(comment, submission, subreddit_name, level, max_level):
 
 for submission in posts:
     comments = []
-    numposts += 1
     for top_level_comment in submission.comments:
         comments += retrieveComments(top_level_comment, submission, subreddit_name, 0, MAX_LEVEL)
-
-    with open('data/' + subreddit_name + '_removed_comments/comments_data' + str(numposts) + '.json', 'w') as f:
-        json.dump(comments, f)
+        if len(comments) >= MAX_COMMENT_LEN:
+            numposts += 1
+            with open('data/' + subreddit_name + '_removed_comments/comments_data' + str(numposts) + '.json', 'w') as f:
+                json.dump(comments, f)
+            comments = []
+    if len(comments) > 0:
+        numposts += 1
+        with open('data/' + subreddit_name + '_removed_comments/comments_data' + str(numposts) + '.json', 'w') as f:
+            json.dump(comments, f)
+        comments = []
 
 print("Comment written to disk")
 
