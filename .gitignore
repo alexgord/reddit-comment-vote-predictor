@@ -3,6 +3,7 @@ __pycache__
 .vscode
 checkpoints
 generator_training_checkpoints
+science_training_checkpoints/
 data
 settings
 
