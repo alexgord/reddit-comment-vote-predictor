@@ -13,6 +13,7 @@ NUMBER_OF_POINTS = int(SECONDS_IN_DAY / (SECONDS_IN_MINUTE * MINUTES_BETWEEN_POS
 
 subreddit_list = ['todayilearned', 'worldnews' ,'science', 'pics', 'gaming', 'IAmA', 'videos']
 weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+user_agent = 'redditaiscraper script by thecomputerscientist'
 
 def convertsubreddittoint(subreddit):
      return subreddit_list.index(subreddit) + 1
@@ -43,3 +44,14 @@ def dailydata(title, time, subreddit, text):
      texts = [text] * NUMBER_OF_POINTS
 
      return titles, times, subreddits, texts
+
+def extractInfoFromCommentForScience(comment, submission, subreddit):
+     return {
+         'id' : comment.id,
+         'text' : comment.body,
+         'score': comment.score,
+         'timepostedutc': comment.created_utc,
+         'submission_title' : submission.title,
+         'subreddit' : subreddit,
+         'removed' : comment.banned_by != None,
+     }
