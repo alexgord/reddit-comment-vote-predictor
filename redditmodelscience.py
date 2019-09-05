@@ -8,7 +8,7 @@ import json
 checkpoint_dir = './science_training_checkpoints/my_checkpoint'
 
 def getmodel():
-    dropoutrate = 0.2
+    dropoutrate = 0.3
 
     hub_layer1 = hub.KerasLayer("https://tfhub.dev/google/tf2-preview/gnews-swivel-20dim/1", output_shape=[20],
                            input_shape=[], dtype=tf.string, trainable=True)
@@ -29,9 +29,9 @@ def getmodel():
     combined = keras.layers.concatenate([y.output, z.output])
 
     # Build the intermediate layers
-    zz = keras.layers.Dense(40, activation="relu")(combined)
+    zz = keras.layers.Dense(80, activation="relu")(combined)
     zz = keras.layers.Dropout(dropoutrate)(zz)
-    zz = keras.layers.Dense(30, activation="relu")(zz)
+    zz = keras.layers.Dense(80, activation="relu")(zz)
     zz = keras.layers.Dropout(dropoutrate)(zz)
     zz = keras.layers.Dense(2, activation="softmax")(zz)
 
