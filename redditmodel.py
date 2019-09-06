@@ -34,9 +34,9 @@ def getmodel():
     combined = keras.layers.concatenate([x.output, y.output, z.output])
 
     # Build the intermediate layers
-    zz = keras.layers.Dense(30, activation="relu")(combined)
+    zz = keras.layers.Dense(46, activation="relu")(combined)
     zz = keras.layers.Dropout(dropoutrate)(zz)
-    zz = keras.layers.Dense(25, activation="relu")(zz)
+    zz = keras.layers.Dense(46, activation="relu")(zz)
     zz = keras.layers.Dropout(dropoutrate)(zz)
     zz = keras.layers.Dense(1, activation="linear")(zz)
 
