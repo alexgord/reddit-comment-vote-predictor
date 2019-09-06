@@ -4,6 +4,17 @@ from praw.models import MoreComments
 from datetime import datetime
 import redditdata as rd
 
+def retrieveComments(comment, submission, subreddit_name, level, max_level):
+    if isinstance(comment, MoreComments) or comment.score_hidden or comment.body == "[removed]" or level > max_level:
+        return []
+
+    returnedcomments = [rd.extractInfoFromComment(comment, submission, subreddit_name)]
+
+    for reply in comment.replies:
+        returnedcomments += retrieveComments(reply, submission, subreddit_name, level + 1, max_level)
+
+    return returnedcomments
+
 reddit = praw.Reddit('redditaiscraper', user_agent='redditaiscraper script by thecomputerscientist')
 
 print("Reddit AI scraper\n\n")
@@ -11,34 +22,28 @@ print("Scraping commencing...")
 
 total_comment_num = 0
 
+MAX_LEVEL = 3
+POST_LIMIT = 1000
+
 for subreddit_name in rd.subreddit_list:
     print("Gettings posts from: {}".format(subreddit_name))
     numposts = 0
-    numcomments = 0
     comments = []
     subreddit = reddit.subreddit(subreddit_name)
 
-    posts = subreddit.hot(limit=1000)
+    posts = subreddit.hot(limit=POST_LIMIT)
 
     for submission in posts:
         numposts += 1
         for top_level_comment in submission.comments:
-            if isinstance(top_level_comment, MoreComments) or top_level_comment.body == "[removed]" or top_level_comment.score_hidden:
-                continue
-            numcomments += 1
-            comments += [rd.extractInfoFromComment(top_level_comment, submission, subreddit_name)]
-        if not isinstance(top_level_comment, MoreComments) and top_level_comment.body != "[removed]"  and not top_level_comment.score_hidden:
-            for second_level_comment in top_level_comment.replies:
-                if isinstance(second_level_comment, MoreComments) or second_level_comment.body == "[removed]"  or second_level_comment.score_hidden:
-                    continue
-                numcomments += 1
-                comments += [rd.extractInfoFromComment(second_level_comment, submission, subreddit_name)]
+            comments += retrieveComments(top_level_comment, submission, subreddit_name, 0, MAX_LEVEL)
 
-    with open('data/comments_' + subreddit_name + '.json', 'w') as f:
-        json.dump(comments, f)
+    if len(comments) > 0:
+        with open('data/comments_' + subreddit_name + '.json', 'w') as f:
+            json.dump(comments, f)
 
-    total_comment_num += numcomments
+    total_comment_num += len(comments)
     print("There are {} posts".format(numposts))
-    print("There are {} comments".format(numcomments))
+    print("There are {} comments".format(len(comments)))
 
 print("There are {} comments in total".format(total_comment_num))
