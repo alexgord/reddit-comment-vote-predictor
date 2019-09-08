@@ -7,7 +7,7 @@ import numpy as np
 import os
 import pickle
 
-NUM_CHUNKS = 2
+NUM_CHUNKS = 4
 
 totalcomments = 0
 highlyvotedcomments = []
@@ -48,11 +48,15 @@ f = open('settings/idx2char.pckl', 'wb')
 pickle.dump(idx2char, f)
 f.close()
 
+idx2char = []
+
 print("Saved idx2char to disk")
 
 f = open('settings/vocab.pckl', 'wb')
 pickle.dump(vocab, f)
 f.close()
+
+vocab = []
 
 print("Saved vocab to disk")
 
@@ -79,7 +83,14 @@ for subreddit_name in rd.subreddit_list:
             textchunk += "\n" + comment['text']
         textchunks += [textchunk]
 
+    highlyvotedcomments = []
+    commentchunks = []
+
+    chunk_num = 0
     for textchunk in textchunks:
+        chunk_num += 1
+        print("Training chunk {} of {}".format(chunk_num, NUM_CHUNKS))
+
         text_as_int = np.array([char2idx[c] for c in textchunk])
 
         examples_per_epoch = len(textchunk)//rmg.seq_length
@@ -94,6 +105,10 @@ for subreddit_name in rd.subreddit_list:
         dataset = dataset.shuffle(rmg.BUFFER_SIZE).batch(rmg.BATCH_SIZE, drop_remainder=True)
 
         steps_per_epoch = examples_per_epoch//rmg.BATCH_SIZE
+
+        text_as_int = []
+        char_dataset = []
+        sequences = []
 
         history = model.fit(dataset.repeat(), epochs=rmg.EPOCHS, steps_per_epoch=steps_per_epoch)
 
