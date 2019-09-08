@@ -7,7 +7,7 @@ import numpy as np
 import os
 import pickle
 
-NUM_CHUNKS = 1
+NUM_CHUNKS = 2
 
 totalcomments = 0
 highlyvotedcomments = []
@@ -26,15 +26,8 @@ text = ""
 for comment in highlyvotedcomments:
     text += "\n" + comment['text']
 
-commentchunks = [list(e) for e in np.array_split(np.array(highlyvotedcomments),NUM_CHUNKS)]
-textchunks = []
-for commentchunk in commentchunks:
-    textchunk = ""
-    for comment in commentchunk:
-        textchunk += "\n" + comment['text']
-    textchunks += [textchunk]
-
 vocab = sorted(set(text))
+text = ""
 
 # Length of the vocabulary in chars
 vocab_size = len(vocab)
@@ -69,22 +62,39 @@ model.compile(
     optimizer = keras.optimizers.Adam(),
     loss = rmg.loss)
 
-for textchunk in textchunks:
-    text_as_int = np.array([char2idx[c] for c in textchunk])
+highlyvotedcomments = []
+for subreddit_name in rd.subreddit_list:
+    print("Training on comments from {}".format(subreddit_name))
+    comments_file = 'data/comments_' + subreddit_name + '.json'
+    with open(comments_file, 'r') as f:
+        newcomments = json.load(f)
+        highlyvotedcomments = [comment for comment in newcomments if comment['score'] > rmg.HIGHLY_VOTED_COMMENT_MINIMUM]
+        newcomments = []
 
-    examples_per_epoch = len(textchunk)//rmg.seq_length
+    commentchunks = [list(e) for e in np.array_split(np.array(highlyvotedcomments),NUM_CHUNKS)]
+    textchunks = []
+    for commentchunk in commentchunks:
+        textchunk = ""
+        for comment in commentchunk:
+            textchunk += "\n" + comment['text']
+        textchunks += [textchunk]
 
-    # Create training examples / targets
-    char_dataset = tf.data.Dataset.from_tensor_slices(text_as_int)
+    for textchunk in textchunks:
+        text_as_int = np.array([char2idx[c] for c in textchunk])
 
-    sequences = char_dataset.batch(rmg.seq_length+1, drop_remainder=True)
+        examples_per_epoch = len(textchunk)//rmg.seq_length
 
-    dataset = sequences.map(rmg.split_input_target)
+        # Create training examples / targets
+        char_dataset = tf.data.Dataset.from_tensor_slices(text_as_int)
 
-    dataset = dataset.shuffle(rmg.BUFFER_SIZE).batch(rmg.BATCH_SIZE, drop_remainder=True)
+        sequences = char_dataset.batch(rmg.seq_length+1, drop_remainder=True)
 
-    steps_per_epoch = examples_per_epoch//rmg.BATCH_SIZE
+        dataset = sequences.map(rmg.split_input_target)
 
-    history = model.fit(dataset.repeat(), epochs=rmg.EPOCHS, steps_per_epoch=steps_per_epoch)
+        dataset = dataset.shuffle(rmg.BUFFER_SIZE).batch(rmg.BATCH_SIZE, drop_remainder=True)
+
+        steps_per_epoch = examples_per_epoch//rmg.BATCH_SIZE
+
+        history = model.fit(dataset.repeat(), epochs=rmg.EPOCHS, steps_per_epoch=steps_per_epoch)
 
 model.save_weights(rmg.checkpoint_dir)
