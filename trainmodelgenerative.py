@@ -88,6 +88,8 @@ for subreddit_name in rd.subreddit_list:
 
     chunk_num = 0
     for textchunk in textchunks:
+        if len(textchunk) == 0:
+            continue
         chunk_num += 1
         print("Training chunk {} of {}".format(chunk_num, NUM_CHUNKS))
 
