@@ -61,8 +61,7 @@ def get_comments_to_remove_timed():
 
 def get_comments_to_remove():
     global commentstoremove
-
-    commentstoremove = rms.getpredictedremovedcomments(modelscience)#rms.getprediction(modelscience, titles, texts)
+    commentstoremove = rms.getpredictedremovedcomments(modelscience)
 
 app = Flask(__name__)
 
