@@ -1,12 +1,20 @@
+import time, threading
 from flask import Flask, request, jsonify, json, send_from_directory
 import logging
 import redditmodel as rm
 import redditmodelgenerative as rmg
+import redditmodelscience as rms
 import redditdata as rd
 import tensorflow as tf
 import pickle
+import praw
+from praw.models import MoreComments
 
 tf.enable_eager_execution()
+
+SECONDS_IN_MINUTE = 60
+MINUTES_IN_HOUR = 60
+SECONDS_IN_HOUR = SECONDS_IN_MINUTE * MINUTES_IN_HOUR
 
 #Mode which predicts votes
 model = rm.getmodelandweights()
@@ -40,7 +48,56 @@ modelgenerative.load_weights(rmg.checkpoint_dir)
 
 modelgenerative.build(tf.TensorShape([1, None]))
 
+#Model which predicts if a comment will be removed on /r/science
+modelscience = rms.getmodelandweights()
+
+commentstoremove = []
+
+def get_comments_to_remove_timed():
+    while True:
+        print(time.ctime())
+        get_comments_to_remove()
+        time.sleep(SECONDS_IN_HOUR)
+
+def get_comments_to_remove():
+    global commentstoremove
+    print("Getting comments from reddit...")
+    reddit = praw.Reddit('redditaiscraper', user_agent='redditaiscraper script by thecomputerscientist')
+
+    subreddit_name = "science"
+
+    comments = []
+    titles = []
+    texts = []
+
+    for submission in reddit.subreddit(subreddit_name).new(limit = 100):
+        # Removes all MorComment objects from submission object
+        submission.comments.replace_more(limit = None)
+
+        unremoved_comments = [c for c in submission.comments.list() if c.body != "[removed]"]
+
+        for comment in unremoved_comments:
+            comments +=  [rd.extractInfoFromComment(comment, submission, subreddit_name)]
+            titles += [submission.title]
+            texts += [comment.body]
+
+    print("Got all submissions...")
+
+    predictions = rms.getprediction(modelscience, titles, texts)
+
+    for comment, prediction in zip(comments, predictions):
+        comment.update( {"removal_prediction":bool(prediction)})
+
+    print("Found all comments to be removed")
+    commentstoremove = [comment for comment in comments if comment['removal_prediction']]
+
 app = Flask(__name__)
+
+@app.before_first_request
+def activate_job():
+    print("Before first request")
+    thread = threading.Thread(target=get_comments_to_remove_timed)
+    thread.start()
 
 @app.route('/', methods=['GET'])
 def get_tasks():
@@ -98,6 +155,10 @@ def post_generate():
     else:
         answer = {"error": "Missing one or more fields. Please provide time, title, text, and subreddit"}
     return jsonify(answer)
+
+@app.route('/api/science/badcomments', methods=['POST'])
+def post_predict_removed():
+    return jsonify(commentstoremove)
 
 @app.route('/js/<path:path>')
 def send_js(path):
