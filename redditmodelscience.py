@@ -1,9 +1,12 @@
 import tensorflow as tf
 from tensorflow import keras
+import praw
+from praw.models import MoreComments
 from datetime import datetime
 import tensorflow_hub as hub
 import redditdata as rd
 import json
+import numpy as np
 
 checkpoint_dir = './science_training_checkpoints/my_checkpoint'
 
@@ -56,12 +59,36 @@ def getmodelandweights():
 
     return model
 
-def getprediction(model, titles, times, subreddits, texts):
-    contexts = [[datetime.utcfromtimestamp(time).minute,
-                datetime.utcfromtimestamp(time).hour,
-                datetime.utcfromtimestamp(time).day,
-                datetime.utcfromtimestamp(time).month,
-                rd.convertutctoweekdayint(time),
-                subreddit] for time, subreddit in zip(times, subreddits)]
+def getprediction(model, titles, texts):
+    return [np.argmax(prediction) for prediction in  model.predict([titles, texts])]
 
-    return rd.removedecimals(rd.flatten(model.predict([contexts, titles, texts])))
+def getpredictedremovedcomments(model):
+    print("Scraping comments from science subreddit")
+    reddit = praw.Reddit('redditaiscraper', user_agent='redditaiscraper script by thecomputerscientist')
+
+    subreddit_name = "science"
+
+    comments = []
+    titles = []
+    texts = []
+
+    for submission in reddit.subreddit(subreddit_name).new(limit = 10):
+        # Removes all MorComment objects from submission object
+        submission.comments.replace_more(limit = None)
+
+        for comment in submission.comments.list():
+            comments +=  [rd.extractInfoFromComment(comment, submission, subreddit_name)]
+            titles += [submission.title]
+            texts += [comment.body]
+
+    predictions = getprediction(model, titles, texts)
+
+    for comment, prediction in zip(comments, predictions):
+        comment.update( {"removal_prediction":bool(prediction)})
+
+    commentstoremove = [comment for comment in comments if comment['removal_prediction']]
+
+    print("Found all comments")
+
+    return commentstoremove
+    

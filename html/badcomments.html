@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8"/>
+        <title>Vote Predictor</title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"/>
+        <link rel="stylesheet" href="../css/badcomments.css"/>
+    </head>
+    <body>
+            <div class="container">
+                <div class="col-xs-1 text-center">
+                    <div class="jumbotron bg-white">
+                        <h1>Reddit Comment Vote Predictor <img src="https://i.imgur.com/ws2kAA0.png" width="70px"></h1>
+                    </div>
+                    <div class="page-header">
+                        <h2>Comments to remove from /r/science subreddit posts</h2>
+                    </div>
+                    <p>
+                        A neural network was trained, using comments from /r/science, to detect 
+                        comments that would be removed by moderators.
+                    </p>
+                    <div id="app">
+                        <div id="bad-comments">
+                            <div class="bad-comment" v-for="badcomment in paginatedcomments" v-on:click="select($event)">
+                                {{ badcomment.text }}
+                                <div><a v-bind:href='badcomment.full_link' target="_blank">link</a></div>
+                            </div>
+                        </div>
+                        <div>Page {{pageNumber + 1}} of {{pageCount()}}</div>
+                        <button @click="firstPage">
+                            First
+                        </button>
+                        <button @click="prevPage">
+                                Previous
+                            </button>
+                        <button @click="nextPage">
+                            Next
+                        </button>
+                        <button @click="lastPage">
+                            Last
+                        </button>
+                    </div>
+                </div>
+            </div>
+    </body>
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script src="../js/badcomments.js"></script>
+</html>
