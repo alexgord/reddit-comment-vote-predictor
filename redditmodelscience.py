@@ -63,6 +63,7 @@ def getprediction(model, titles, texts):
     return [np.argmax(prediction) for prediction in  model.predict([titles, texts])]
 
 def getpredictedremovedcomments(model):
+    print("Scraping comments from science subreddit")
     reddit = praw.Reddit('redditaiscraper', user_agent='redditaiscraper script by thecomputerscientist')
 
     subreddit_name = "science"
@@ -85,5 +86,9 @@ def getpredictedremovedcomments(model):
     for comment, prediction in zip(comments, predictions):
         comment.update( {"removal_prediction":bool(prediction)})
 
-    return comments
+    commentstoremove = [comment for comment in comments if comment['removal_prediction']]
+
+    print("Found all comments")
+
+    return commentstoremove
     

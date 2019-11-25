@@ -61,35 +61,8 @@ def get_comments_to_remove_timed():
 
 def get_comments_to_remove():
     global commentstoremove
-    print("Getting comments from reddit...")
-    reddit = praw.Reddit('redditaiscraper', user_agent='redditaiscraper script by thecomputerscientist')
 
-    subreddit_name = "science"
-
-    comments = []
-    titles = []
-    texts = []
-
-    for submission in reddit.subreddit(subreddit_name).new(limit = 100):
-        # Removes all MorComment objects from submission object
-        submission.comments.replace_more(limit = None)
-
-        unremoved_comments = [c for c in submission.comments.list() if c.body != "[removed]"]
-
-        for comment in unremoved_comments:
-            comments +=  [rd.extractInfoFromComment(comment, submission, subreddit_name)]
-            titles += [submission.title]
-            texts += [comment.body]
-
-    print("Got all submissions...")
-
-    predictions = rms.getprediction(modelscience, titles, texts)
-
-    for comment, prediction in zip(comments, predictions):
-        comment.update( {"removal_prediction":bool(prediction)})
-
-    print("Found all comments to be removed")
-    commentstoremove = [comment for comment in comments if comment['removal_prediction']]
+    commentstoremove = rms.getpredictedremovedcomments(modelscience)#rms.getprediction(modelscience, titles, texts)
 
 app = Flask(__name__)
 
