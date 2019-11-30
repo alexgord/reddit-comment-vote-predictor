@@ -38,8 +38,6 @@
             },
             select: function(event)
             {
-                console.log("In click of div event yay");
-                console.log(event.currentTarget);
                 currentTarget = event.currentTarget;
                 if(currentTarget.style.whiteSpace === "normal")
                 {
@@ -61,11 +59,10 @@
             },
             pageCount: function()
             {
-                return Math.ceil(this.badcomments.length/this.comentsPerPage);
+                return Math.max(Math.ceil(this.badcomments.length/this.comentsPerPage), 1);
             },
             paginateData: function()
             {
-                console.log("paginating data!");
                 const start = this.pageNumber * this.comentsPerPage,
                 end = start + this.comentsPerPage;
                 this.paginatedcomments = this.badcomments.slice(start, end);
@@ -76,10 +73,8 @@
             postData(url = '/api/science/badcomments')
             .then(data =>
                 {
-                    console.log("I got the bad comments");
                     this.badcomments = data;
                     this.paginateData();
-                    console.log(this.badcomments);
                 })
             .catch(error => console.error(error));
         }
