@@ -72,10 +72,9 @@ def getpredictedremovedcomments(model):
     titles = []
     texts = []
 
-    for submission in reddit.subreddit(subreddit_name).new(limit = 10):
-        # Removes all MorComment objects from submission object
+    for submission in reddit.subreddit(subreddit_name).new(limit = 100):
+        # Removes all MoreComment objects from submission object
         submission.comments.replace_more(limit = None)
-
         for comment in submission.comments.list():
             comments +=  [rd.extractInfoFromComment(comment, submission, subreddit_name)]
             titles += [submission.title]
