@@ -26,19 +26,21 @@
                                 <div><a v-bind:href='badcomment.full_link' target="_blank">link</a></div>
                             </div>
                         </div>
-                        <div>Page {{pageNumber + 1}} of {{pageCount()}}</div>
-                        <button @click="firstPage">
-                            First
-                        </button>
-                        <button @click="prevPage">
-                                Previous
+                        <div id="buttons">
+                            <div>Page {{pageNumber + 1}} of {{pageCount()}}</div>
+                            <button @click="firstPage">
+                                First
                             </button>
-                        <button @click="nextPage">
-                            Next
-                        </button>
-                        <button @click="lastPage">
-                            Last
-                        </button>
+                            <button @click="prevPage">
+                                    Previous
+                                </button>
+                            <button @click="nextPage">
+                                Next
+                            </button>
+                            <button @click="lastPage">
+                                Last
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

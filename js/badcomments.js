@@ -22,7 +22,7 @@
             },
             nextPage: function(event)
             {
-                if(this.pageNumber < this.pageCount())
+                if(this.pageNumber < this.pageCount() - 1)
                 {
                     this.pageNumber++;
                     this.paginateData();
