@@ -1,8 +1,15 @@
 #bad-comments
 {
-    overflow:scroll;
+    overflow-y:scroll;
     height: 80vh;
+    margin-bottom: 10px;
 }
+
+#buttons
+{
+    margin-bottom: 10px;
+}
+
 .bad-comment
 {
     border-style: solid;

@@ -86,7 +86,8 @@ def getpredictedremovedcomments(model):
     for comment, prediction in zip(comments, predictions):
         comment.update( {"removal_prediction":bool(prediction)})
 
-    commentstoremove = [comment for comment in comments if comment['removal_prediction']]
+    commentstoremove = [comment for comment in comments if comment['removal_prediction']
+                            and comment['text'] != "[removed]"]
 
     print("Found all comments")
 
