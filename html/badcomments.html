@@ -20,31 +20,46 @@
                         comments that would be removed by moderators.
                     </p>
                     <div id="app">
-                        <div id="bad-comments">
-                            <div class="bad-comment" v-for="badcomment in paginatedcomments" v-on:click="select($event)">
-                                {{ badcomment.text }}
-                                <div><a v-bind:href='badcomment.full_link' target="_blank">link</a></div>
+                        <div v-if="badcommentsobtainedat != null && paginatedcomments != null">
+                            <div v-if="paginatedcomments.length != 0">
+                                <div>Comments obtained on {{badcommentsobtainedat.toString()}}</div>
+                                <div id="bad-comments">
+                                    <div class="bad-comment" v-for="badcomment in paginatedcomments" v-on:click="select($event)">
+                                        {{ badcomment.text }}
+                                        <div><a v-bind:href='badcomment.full_link' target="_blank">link</a></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div v-else>
+                                <div>No bad comments have been found, yet. Try again in a few minutes.</div>
                             </div>
                         </div>
-                        <div id="buttons">
-                            <div>Page {{pageNumber + 1}} of {{pageCount()}}</div>
-                            <button @click="firstPage">
-                                First
-                            </button>
-                            <button @click="prevPage">
-                                    Previous
+                        <div v-else>
+                            Fetching comments...
+                            <span class="spinner-border text-muted"></span>
+                        </div>
+                        <div v-if="paginatedcomments != null && paginatedcomments.length != 0">
+                            <div id="buttons">
+                                <div>Page {{pageNumber + 1}} of {{pageCount()}}</div>
+                                <button @click="firstPage">
+                                    First
                                 </button>
-                            <button @click="nextPage">
-                                Next
-                            </button>
-                            <button @click="lastPage">
-                                Last
-                            </button>
+                                <button @click="prevPage">
+                                        Previous
+                                    </button>
+                                <button @click="nextPage">
+                                    Next
+                                </button>
+                                <button @click="lastPage">
+                                    Last
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
     </body>
     <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script src="../js/httphelper.js"></script>
     <script src="../js/badcomments.js"></script>
 </html>
