@@ -5,7 +5,8 @@
         el: '#app',
         data: {
           badcomments: [],
-          paginatedcomments:[],
+          badcommentsobtainedat : null,
+          paginatedcomments:null,
           pageNumber: 0,
           comentsPerPage: 30
         },
@@ -75,6 +76,12 @@
                 {
                     this.badcomments = data;
                     this.paginateData();
+                })
+            .catch(error => console.error(error));
+            getData(url = '/api/science/badcomments/obtainedtime')
+            .then(data =>
+                {
+                    this.badcommentsobtainedat = new Date(data);
                 })
             .catch(error => console.error(error));
         }

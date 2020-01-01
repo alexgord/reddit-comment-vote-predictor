@@ -1,3 +1,4 @@
+import datetime
 import time, threading
 from flask import Flask, request, jsonify, json, send_from_directory
 import logging
@@ -52,6 +53,7 @@ modelgenerative.build(tf.TensorShape([1, None]))
 modelscience = rms.getmodelandweights()
 
 commentstoremove = []
+obtainedcommentstoremovetime = None
 
 def get_comments_to_remove_timed():
     while True:
@@ -61,7 +63,9 @@ def get_comments_to_remove_timed():
 
 def get_comments_to_remove():
     global commentstoremove
+    global obtainedcommentstoremovetime
     commentstoremove = rms.getpredictedremovedcomments(modelscience)
+    obtainedcommentstoremovetime = datetime.datetime.utcnow()
 
 app = Flask(__name__)
 
@@ -69,6 +73,7 @@ app = Flask(__name__)
 def activate_job():
     print("Before first request")
     thread = threading.Thread(target=get_comments_to_remove_timed)
+    thread.daemon = True
     thread.start()
 
 @app.route('/', methods=['GET'])
@@ -132,13 +137,17 @@ def post_generate():
 def post_predict_removed():
     return jsonify(commentstoremove)
 
+@app.route('/api/science/badcomments/obtainedtime', methods=['GET'])
+def post_predict_removed_time():
+    return jsonify(obtainedcommentstoremovetime)
+
 @app.route('/js/<path:path>')
 def send_js(path):
     return send_from_directory('js', path)
 
 @app.route('/<path:path>')
 def send_app(path):
-    return send_from_directory('html', path)
+    return send_from_directory('html', path + '.html')
 
 @app.route('/css/<path:path>')
 def send_css(path):
