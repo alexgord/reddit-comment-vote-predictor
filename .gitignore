@@ -9,3 +9,6 @@ settings
 
 #Settings
 praw.ini
+
+#Output Files
+nohup.out
