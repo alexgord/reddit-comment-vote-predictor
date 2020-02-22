@@ -4,10 +4,13 @@ import redditdata as rd
 import redditmodelgenerative as rmg
 import json
 import numpy as np
+import math
 import os
 import pickle
+import random
 
-NUM_CHUNKS = 4
+trainpercentage = 0.85
+validationpercentage = 1 - trainpercentage
 
 totalcomments = 0
 highlyvotedcomments = []
@@ -68,48 +71,63 @@ model.compile(
 
 highlyvotedcomments = []
 for subreddit_name in rd.subreddit_list:
-    print("Training on comments from {}".format(subreddit_name))
+    print("Gathering comments from {}".format(subreddit_name))
     comments_file = 'data/comments_' + subreddit_name + '.json'
     with open(comments_file, 'r') as f:
         newcomments = json.load(f)
-        highlyvotedcomments = [comment for comment in newcomments if comment['score'] > rmg.HIGHLY_VOTED_COMMENT_MINIMUM]
+        highlyvotedcomments += [comment for comment in newcomments if comment['score'] > rmg.HIGHLY_VOTED_COMMENT_MINIMUM]
         newcomments = []
 
-    commentchunks = [list(e) for e in np.array_split(np.array(highlyvotedcomments),NUM_CHUNKS)]
-    textchunks = []
-    for commentchunk in commentchunks:
-        textchunk = ""
-        for comment in commentchunk:
-            textchunk += "\n" + comment['text']
-        textchunks += [textchunk]
+random.shuffle(highlyvotedcomments)
 
-    highlyvotedcomments = []
-    commentchunks = []
+highly_voted_comment_texts = [c['text'] for c in highlyvotedcomments]
 
-    chunk_num = 0
-    for textchunk in textchunks:
-        chunk_num += 1
-        print("Training chunk {} of {}".format(chunk_num, NUM_CHUNKS))
+comments_text_train = highly_voted_comment_texts[:math.floor(len(highly_voted_comment_texts)*trainpercentage)]
+comments_text_test = highly_voted_comment_texts[math.ceil(len(highly_voted_comment_texts)*validationpercentage):]
 
-        text_as_int = np.array([char2idx[c] for c in textchunk])
+bigcomment_text_train = ""
+for comment in comments_text_train:
+    bigcomment_text_train += "\n" + comment
 
-        examples_per_epoch = len(textchunk)//rmg.seq_length
+bigcomment_text_test = ""
+for comment in comments_text_test:
+    bigcomment_text_test += "\n" + comment
 
-        # Create training examples / targets
-        char_dataset = tf.data.Dataset.from_tensor_slices(text_as_int)
+highlyvotedcomments = []
 
-        sequences = char_dataset.batch(rmg.seq_length+1, drop_remainder=True)
+text_as_int_train = np.array([char2idx[c] for c in bigcomment_text_train])
+text_as_int_test = np.array([char2idx[c] for c in bigcomment_text_test])
 
-        dataset = sequences.map(rmg.split_input_target)
+examples_per_epoch = len(bigcomment_text_train)//rmg.seq_length
 
-        dataset = dataset.shuffle(rmg.BUFFER_SIZE).batch(rmg.BATCH_SIZE, drop_remainder=True)
+# Create training examples / targets
+char_dataset_train = tf.data.Dataset.from_tensor_slices(text_as_int_train)
 
-        steps_per_epoch = examples_per_epoch//rmg.BATCH_SIZE
+char_dataset_test = tf.data.Dataset.from_tensor_slices(text_as_int_test)
 
-        text_as_int = []
-        char_dataset = []
-        sequences = []
+sequences_train = char_dataset_train.batch(rmg.seq_length+1, drop_remainder=True)
 
-        history = model.fit(dataset.repeat(), epochs=rmg.EPOCHS, steps_per_epoch=steps_per_epoch)
+sequences_test = char_dataset_train.batch(rmg.seq_length+1, drop_remainder=True)
+
+dataset_train = sequences_train.map(rmg.split_input_target)
+
+dataset_train = dataset_train.shuffle(rmg.BUFFER_SIZE).batch(rmg.BATCH_SIZE, drop_remainder=True)
+
+dataset_test = sequences_test.map(rmg.split_input_target)
+
+dataset_test = dataset_test.shuffle(rmg.BUFFER_SIZE).batch(rmg.BATCH_SIZE, drop_remainder=True)
+
+steps_per_epoch = examples_per_epoch//rmg.BATCH_SIZE
+
+text_as_int = []
+char_dataset = []
+sequences = []
+
+history = model.fit(dataset_train.repeat(), epochs=rmg.EPOCHS, steps_per_epoch=steps_per_epoch)
+
+#Test the model and print results
+print("Model evaluation:")
+result = model.evaluate(dataset_test, verbose=0)
+print("%s: %.3f" % (model.metrics_names[0], result))
 
 model.save_weights(rmg.checkpoint_dir)

@@ -7,28 +7,38 @@ todayilearned, worldnews, science, pics, gaming, IAmA, videos.
 
 ## Requirements
 
-This tool was developed using TensorFlow 1.4 and uses Flask to run the web server.
+This tool was developed using TensorFlow 2.1 and uses Flask to run the web server.
+
+## Setup
+
+Make sure you have an app registered with reddit and you create the file `settings\app.json`
+
+with the following content:
+
+```json
+{
+    "app_id" : "<app id here>",
+    "secret" : "<app secret here>"
+}
+```
+
+Next, make sure you have Python, TensorFlow 2.1, and the necessary CUDA drivers installed.
 
 ## Usage
 
 ### Scripts and functions
 
 To scrape data from Reddit to get your own data to train the neural network with, 
-run the `queryreddit.py` script.
+run the `queryreddit.py` script to gather the data that trains the neural network 
+that predicts the votes a comment will get, and run `getsciencedata.py` to gather 
+the data that trains the neural network that predicts if a comment would be 
+removed from /r/science.
 
-To create, train, and save the neural network using this data, run the `trainmodel.py` 
-script.
+To create, train, and save the neural network using this data, run the `trainmodel.py`, 
+the `trainmodelgenerative.py`, and the `trainsciencemodel.py` scripts.
 
-To test the neural network and predict the votes on the downloaded comments, run 
-the `predict.py` script.
-
-The code to load the model once it is created and saved is the following: 
-
-```python
-import redditmodel as rm
-
-model = rm.getmodelandweights()
-```
+To test all the neural networks and see some sample predictions, run 
+the `testmodels.py` script.
 
 ### REST API
 

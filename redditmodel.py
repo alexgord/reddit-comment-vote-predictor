@@ -63,10 +63,17 @@ def getmodelandweights():
 
 def getprediction(model, titles, times, subreddits, texts):
     contexts = [[datetime.utcfromtimestamp(time).minute,
-                datetime.utcfromtimestamp(time).hour,
-                datetime.utcfromtimestamp(time).day,
-                datetime.utcfromtimestamp(time).month,
-                rd.convertutctoweekdayint(time),
-                subreddit] for time, subreddit in zip(times, subreddits)]
+                    datetime.utcfromtimestamp(time).hour,
+                    datetime.utcfromtimestamp(time).day,
+                    datetime.utcfromtimestamp(time).month,
+                    rd.convertutctoweekdayint(time),
+                    subreddit] for time, subreddit in zip(times, subreddits)]
 
-    return rd.removedecimals(rd.flatten(model.predict([contexts, titles, texts])))
+    #Build data pipeline
+    dataset_context = tf.data.Dataset.from_tensors(contexts)
+    dataset_title = tf.data.Dataset.from_tensors(titles)
+    dataset_text = tf.data.Dataset.from_tensors(texts)
+    dataset_inputs = tf.data.Dataset.zip((dataset_context, dataset_title, dataset_text))
+    dataset = tf.data.Dataset.zip((dataset_inputs,))
+
+    return rd.removedecimals(rd.flatten(model.predict(dataset)))

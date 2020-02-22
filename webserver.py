@@ -11,7 +11,16 @@ import pickle
 import praw
 from praw.models import MoreComments
 
-tf.enable_eager_execution()
+physical_devices = tf.config.list_physical_devices('GPU') 
+try: 
+  # Disable first GPU 
+  tf.config.set_visible_devices(physical_devices[1:], 'GPU') 
+  logical_devices = tf.config.list_logical_devices('GPU') 
+  # Logical device was not created for first GPU 
+  assert len(logical_devices) == len(physical_devices) - 1 
+except: 
+  # Invalid device or cannot modify virtual devices once initialized. 
+  pass 
 
 SECONDS_IN_MINUTE = 60
 MINUTES_IN_HOUR = 60
