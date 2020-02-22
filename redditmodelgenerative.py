@@ -5,17 +5,10 @@ import tensorflow_hub as hub
 import redditdata as rd
 import json
 
-if tf.test.is_gpu_available():
-  rnn = keras.layers.CuDNNGRU
-else:
-  import functools
-  rnn = functools.partial(
-    keras.layers.GRU, recurrent_activation='sigmoid')
-
 HIGHLY_VOTED_COMMENT_MINIMUM = 100
 BATCH_SIZE = 64
 BUFFER_SIZE = 10000
-EPOCHS=120
+EPOCHS=35
 
 # The embedding dimension
 embedding_dim = 256
@@ -38,14 +31,14 @@ def loss(labels, logits):
   return keras.losses.sparse_categorical_crossentropy(labels, logits, from_logits=True)
 
 def getmodel(vocab_size, embedding_dim, rnn_units, batch_size):
-    model = keras.Sequential([
-    keras.layers.Embedding(vocab_size, embedding_dim,
-                                batch_input_shape=[batch_size, None]),
-    rnn(rnn_units,
-        return_sequences=True,
-        recurrent_initializer='glorot_uniform',
-        stateful=True),
-    keras.layers.Dense(vocab_size)
+    model = tf.keras.Sequential([
+    tf.keras.layers.Embedding(vocab_size, embedding_dim,
+                              batch_input_shape=[batch_size, None]),
+    tf.keras.layers.GRU(rnn_units,
+                        return_sequences=True,
+                        stateful=True,
+                        recurrent_initializer='glorot_uniform'),
+    tf.keras.layers.Dense(vocab_size)
     ])
     return model
 

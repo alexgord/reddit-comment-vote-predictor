@@ -15,7 +15,16 @@ def retrieveComments(comment, submission, subreddit_name, level, max_level):
 
     return returnedcomments
 
-reddit = praw.Reddit('redditaiscraper', user_agent='redditaiscraper script by thecomputerscientist')
+appId = ''
+appSecret = ''
+
+app_settings_file = 'settings/app.json'
+with open(app_settings_file, 'r') as f:
+    settings = json.load(f)
+    appId = settings['app_id']
+    appSecret = settings['secret']
+
+reddit = praw.Reddit(client_id=appId, client_secret=appSecret, user_agent=rd.user_agent)
 
 print("Reddit AI scraper\n\n")
 print("Scraping commencing...")

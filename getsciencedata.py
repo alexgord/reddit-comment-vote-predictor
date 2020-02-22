@@ -1,10 +1,12 @@
 import json
 import praw
 from praw.models import MoreComments
+from prawcore.exceptions import PrawcoreException
 from datetime import datetime
 import redditdata as rd
 import getpass
 import sys
+import time
 
 print("Reddit AI science scraper\n\n")
 
@@ -32,11 +34,15 @@ if tfacode != '':
 
 reddit = praw.Reddit(client_id=appId, client_secret=appSecret, password=password, user_agent=rd.user_agent, username=username)
 
-if username == '' or reddit.user.me() != username:
+try:
+    if username == '' or reddit.user.me() != username:
+        print("Login failure, exiting...")
+        sys.exit()
+    else:
+        print("Login successful.")
+except:
     print("Login failure, exiting...")
     sys.exit()
-else:
-    print("Login successful.")
 
 print("\n\nScraping commencing...")
 
@@ -67,9 +73,14 @@ def retrieveComments(comment, submission, subreddit_name, level, max_level):
     return returnedcomments
 
 for submission in posts:
+    print("Getting comments from post: " + submission.title)
     numposts += 1
-    for top_level_comment in submission.comments:
-        comments += retrieveComments(top_level_comment, submission, subreddit_name, 0, MAX_LEVEL)
+    try:
+        for top_level_comment in submission.comments:
+            print("Getting top level comment")
+            comments += retrieveComments(top_level_comment, submission, subreddit_name, 0, MAX_LEVEL)
+    except (praw.exceptions.APIException, PrawcoreException):
+        print("Had problems getting comments for post, moving on to next post...")
 
 if len(comments) > 0:
     with open('data/' + subreddit_name + '_removed_comments_data.json', 'w') as f:

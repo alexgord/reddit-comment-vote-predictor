@@ -60,11 +60,26 @@ def getmodelandweights():
     return model
 
 def getprediction(model, titles, texts):
-    return [np.argmax(prediction) for prediction in  model.predict([titles, texts])]
+    #Build data pipeline
+    dataset_titles = tf.data.Dataset.from_tensors(titles)
+    dataset_texts = tf.data.Dataset.from_tensors(texts)
+    dataset_inputs = tf.data.Dataset.zip((dataset_titles, dataset_texts))
+    dataset = tf.data.Dataset.zip((dataset_inputs,))
+
+    return [np.argmax(prediction) for prediction in  model.predict(dataset)]
 
 def getpredictedremovedcomments(model):
     print("Scraping comments from science subreddit")
-    reddit = praw.Reddit('redditaiscraper', user_agent='redditaiscraper script by thecomputerscientist')
+    appId = ''
+    appSecret = ''
+
+    app_settings_file = 'settings/app.json'
+    with open(app_settings_file, 'r') as f:
+        settings = json.load(f)
+        appId = settings['app_id']
+        appSecret = settings['secret']
+
+    reddit = praw.Reddit(client_id=appId, client_secret=appSecret, user_agent=rd.user_agent)
 
     subreddit_name = "science"
 

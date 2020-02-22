@@ -8,16 +8,14 @@ import math
 from os import listdir
 from os.path import isfile, join
 
-tf.enable_eager_execution()
-
 removed_comments_file = "data/science_removed_comments_data.json"
 
 comments = []
 
-trainpercentage = 0.8
+trainpercentage = 0.85
 validationpercentage = 1 - trainpercentage
 
-epochs = 60
+epochs = 600
 
 #Build the model
 model = rms.getmodel()
@@ -37,8 +35,8 @@ comment_texts = [c['text'] for c in comments]
 comment_removed = [c['removed'] for c in comments]
 
 #Split the data into train and test sets
-comment_title_train = comment_titles[:math.floor(len(comment_titles)*trainpercentage)]
-comment_title_test = comment_titles[math.ceil(len(comment_titles)*validationpercentage):]
+comment_post_title_train = comment_titles[:math.floor(len(comment_titles)*trainpercentage)]
+comment_post_title_test = comment_titles[math.ceil(len(comment_titles)*validationpercentage):]
 
 comment_text_train = comment_texts[:math.floor(len(comment_texts)*trainpercentage)]
 comment_text_test = comment_texts[math.ceil(len(comment_texts)*validationpercentage):]
@@ -46,12 +44,26 @@ comment_text_test = comment_texts[math.ceil(len(comment_texts)*validationpercent
 comment_removed_train = comment_removed[:math.floor(len(comment_removed)*trainpercentage)]
 comment_removed_test = comment_removed[math.ceil(len(comment_removed)*validationpercentage):]
 
+#Build training data pipeline
+dataset_title_train = tf.data.Dataset.from_tensors(comment_post_title_train)
+dataset_text_train = tf.data.Dataset.from_tensors(comment_text_train)
+dataset_removed_train = tf.data.Dataset.from_tensors(comment_removed_train)
+dataset_inputs_train = tf.data.Dataset.zip((dataset_title_train, dataset_text_train))
+dataset_train = tf.data.Dataset.zip((dataset_inputs_train, dataset_removed_train))
+
+#Build testing data pipeline
+dataset_title_test = tf.data.Dataset.from_tensors(comment_post_title_test)
+dataset_text_test = tf.data.Dataset.from_tensors(comment_text_test)
+dataset_removed_test = tf.data.Dataset.from_tensors(comment_removed_test)
+dataset_inputs_test = tf.data.Dataset.zip((dataset_title_test, dataset_text_test))
+dataset_test = tf.data.Dataset.zip((dataset_inputs_test, dataset_removed_test))
+
 #Feed the data through the model
-history = model.fit([comment_title_train, comment_text_train],
-                        [comment_removed_train], epochs=epochs, validation_data=([comment_title_test, comment_text_test], [comment_removed_test]))
+history = model.fit(dataset_train, epochs=epochs)
 
 #Test the model and print results
-results = model.evaluate([comment_title_test, comment_text_test], [comment_removed_test], verbose=0)
+print("Model evaluation:")
+results = model.evaluate(dataset_test, verbose=0)
 for name, value in zip(model.metrics_names, results):
     print("%s: %.3f" % (name, value))
 
