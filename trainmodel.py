@@ -17,12 +17,11 @@ model = rm.getmodel()
 trainpercentage = 0.85
 validationpercentage = 1 - trainpercentage
 
-EPOCHS = 2500
+EPOCHS = 2000
 
 comments = []
 #Read in all the comments from disk
 for subreddit_name in rd.subreddit_list:
-        comments = []
         print("Training on data from {}".format(subreddit_name))
         comments_file = 'data/comments_' + subreddit_name + '.json'
         with open(comments_file, 'r') as f:
@@ -77,7 +76,7 @@ dataset_inputs_test= tf.data.Dataset.zip((dataset_context_test, dataset_title_te
 dataset_test = tf.data.Dataset.zip((dataset_inputs_test, dataset_score_test))
 
 #Feed the data through the model
-history = model.fit(dataset_train, epochs=EPOCHS)
+history = model.fit(dataset_train, epochs=EPOCHS, validation_data=dataset_test)
 
 #Test the model and print results
 print("Model evaluation:")

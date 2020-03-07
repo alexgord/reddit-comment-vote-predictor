@@ -52,7 +52,7 @@ total_comment_num = 0
 
 subreddit_name = 'science'
 
-MAX_LEVEL = 3
+MAX_LEVEL = 6
 
 print("Gettings posts from: {}".format(subreddit_name))
 numposts = 0
@@ -74,8 +74,9 @@ def retrieveComments(comment, submission, subreddit_name, level, max_level):
 
 for submission in posts:
     print("Getting comments from post: " + submission.title)
-    numposts += 1
     try:
+        submission.comments.replace_more(limit=0)
+        numposts += 1
         for top_level_comment in submission.comments:
             print("Getting top level comment")
             comments += retrieveComments(top_level_comment, submission, subreddit_name, 0, MAX_LEVEL)

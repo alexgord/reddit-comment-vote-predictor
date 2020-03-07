@@ -123,7 +123,7 @@ text_as_int = []
 char_dataset = []
 sequences = []
 
-history = model.fit(dataset_train.repeat(), epochs=rmg.EPOCHS, steps_per_epoch=steps_per_epoch)
+history = model.fit(dataset_train.repeat(), epochs=rmg.EPOCHS, steps_per_epoch=steps_per_epoch, validation_data = dataset_test)
 
 #Test the model and print results
 print("Model evaluation:")
