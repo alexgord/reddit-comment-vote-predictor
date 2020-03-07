@@ -31,7 +31,7 @@ print("Scraping commencing...")
 
 total_comment_num = 0
 
-MAX_LEVEL = 3
+MAX_LEVEL = 6
 POST_LIMIT = 1000
 
 for subreddit_name in rd.subreddit_list:
@@ -43,6 +43,7 @@ for subreddit_name in rd.subreddit_list:
     posts = subreddit.hot(limit=POST_LIMIT)
 
     for submission in posts:
+        submission.comments.replace_more(limit=0)
         numposts += 1
         for top_level_comment in submission.comments:
             comments += retrieveComments(top_level_comment, submission, subreddit_name, 0, MAX_LEVEL)

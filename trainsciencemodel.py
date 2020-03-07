@@ -15,7 +15,7 @@ comments = []
 trainpercentage = 0.85
 validationpercentage = 1 - trainpercentage
 
-epochs = 600
+epochs = 2000
 
 #Build the model
 model = rms.getmodel()
@@ -59,7 +59,7 @@ dataset_inputs_test = tf.data.Dataset.zip((dataset_title_test, dataset_text_test
 dataset_test = tf.data.Dataset.zip((dataset_inputs_test, dataset_removed_test))
 
 #Feed the data through the model
-history = model.fit(dataset_train, epochs=epochs)
+history = model.fit(dataset_train, epochs=epochs, validation_data = dataset_test)
 
 #Test the model and print results
 print("Model evaluation:")

@@ -62,7 +62,7 @@ predictions_science = rms.getprediction(modelscience, ["title"], ["text"])
 print("Science predictions:")
 print(predictions_science)
 
-generatedtext = rmg.generatesentence(modelgenerative, "Hello ", char2idx, idx2char)
+generatedtext = rmg.generatesentence(modelgenerative, "This ", char2idx, idx2char)
 
 print("Generated text:")
 print(generatedtext)

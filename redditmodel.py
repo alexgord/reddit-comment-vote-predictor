@@ -6,7 +6,7 @@ import redditdata as rd
 import json
 
 def getmodel():
-    dropoutrate = 0.2
+    dropoutrate = 0.3
 
     hub_layer1 = hub.KerasLayer("https://tfhub.dev/google/tf2-preview/gnews-swivel-20dim/1", output_shape=[20],
                            input_shape=[], dtype=tf.string, trainable=True)
@@ -38,6 +38,14 @@ def getmodel():
     zz = keras.layers.Dropout(dropoutrate)(zz)
     zz = keras.layers.Dense(46, activation="relu")(zz)
     zz = keras.layers.Dropout(dropoutrate)(zz)
+    zz = keras.layers.Dense(46, activation="relu")(zz)
+    zz = keras.layers.Dropout(dropoutrate)(zz)
+    zz = keras.layers.Dense(46, activation="relu")(zz)
+    zz = keras.layers.Dropout(dropoutrate)(zz)
+    zz = keras.layers.Dense(46, activation="relu")(zz)
+    zz = keras.layers.Dropout(dropoutrate)(zz)
+    zz = keras.layers.Dense(46, activation="relu")(zz)
+    zz = keras.layers.Dropout(dropoutrate)(zz)
     zz = keras.layers.Dense(1, activation="linear")(zz)
 
     # our model will accept the inputs of the three branches and
@@ -46,7 +54,7 @@ def getmodel():
 
     model.summary()
 
-    optimizer = keras.optimizers.RMSprop(0.001)
+    optimizer = keras.optimizers.Adam()
 
     model.compile(loss='mse',
         optimizer=optimizer,
