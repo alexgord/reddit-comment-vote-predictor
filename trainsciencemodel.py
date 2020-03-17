@@ -1,6 +1,8 @@
 import tensorflow as tf
 from tensorflow import keras
 import json
+from pymongo import MongoClient
+import sys
 import redditdata as rd
 import redditmodelscience as rms
 import random
@@ -20,13 +22,23 @@ epochs = 2000
 #Build the model
 model = rms.getmodel()
 
-with open(removed_comments_file, 'r') as f:
-    comments = json.load(f)
+connection_string = "mongodb://localhost:27017" if len(sys.argv) == 1 else sys.argv[1]
+client = MongoClient(connection_string)
+db=client["reddit-comment-vote-predictor"]
+collection = db.comments
 
-#Prepare data to be fed into the model
-#comments = sorted(comments, key = lambda i: (i['timepostedutc']))
+#Read in all the comments from the database
+number_of_documents = collection.count_documents({'$and' : [{'removed': { '$exists': True}}, {'subreddit': {'$eq': 'science'}}]})
 
-#comments
+print("Gathering {} documents from database".format(number_of_documents))
+
+results = collection.find({'$and' : [{'removed': { '$exists': True}}, {'subreddit': {'$eq': 'science'}}]})
+
+comments = []
+for comment in results:
+    comments += [comment]
+
+print("{} comments in memory".format(len(comments)))
 
 random.shuffle(comments)
 

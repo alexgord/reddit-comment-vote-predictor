@@ -8,7 +8,7 @@ import json
 HIGHLY_VOTED_COMMENT_MINIMUM = 50
 BATCH_SIZE = 64
 BUFFER_SIZE = 10000
-EPOCHS=23
+EPOCHS=15
 
 # The embedding dimension
 embedding_dim = 256

@@ -68,5 +68,9 @@ def extractInfoFromCommentForScience(comment, submission, subreddit):
          'timepostedutc': comment.created_utc,
          'submission_title' : submission.title,
          'subreddit' : subreddit,
+         'comment_id' : comment.id,
+         'submission_id' : submission.id,
+         'link' : comment.permalink,
+         'full_link' : 'https://www.reddit.com' + comment.permalink,
          'removed' : comment.banned_by != None
      }
