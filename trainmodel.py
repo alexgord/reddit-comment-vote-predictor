@@ -1,6 +1,7 @@
 import tensorflow as tf
 from tensorflow import keras
 from sklearn.model_selection import train_test_split
+from pymongo import MongoClient
 import json
 from datetime import datetime
 import numpy
@@ -10,6 +11,7 @@ import random
 import math
 import redditdata as rd
 import redditmodel as rm
+import sys
 
 #Build the model
 model = rm.getmodel()
@@ -19,13 +21,23 @@ validationpercentage = 1 - trainpercentage
 
 EPOCHS = 2000
 
+connection_string = "mongodb://localhost:27017" if len(sys.argv) == 1 else sys.argv[1]
+client = MongoClient(connection_string)
+db=client["reddit-comment-vote-predictor"]
+collection = db.comments
+
+#Read in all the comments from the database
+number_of_documents = collection.count_documents({'comment_id': { '$exists': True}})
+
+print("Gathering {} documents from database".format(number_of_documents))
+
+results = collection.find()
+
 comments = []
-#Read in all the comments from disk
-for subreddit_name in rd.subreddit_list:
-        print("Training on data from {}".format(subreddit_name))
-        comments_file = 'data/comments_' + subreddit_name + '.json'
-        with open(comments_file, 'r') as f:
-                comments += json.load(f)
+for comment in results:
+    comments += [comment]
+
+print("{} comments in memory".format(len(comments)))
 
 #Print a few statistics on the data
 print("Highest score: {}".format(max([c['score'] for c in comments])))
