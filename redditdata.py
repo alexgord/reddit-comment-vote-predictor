@@ -46,6 +46,9 @@ def dailydata(title, time, subreddit, text):
 
      return titles, times, subreddits, texts
 
+def getdayssinceepoch(utctime):
+     return (datetime.utcfromtimestamp(utctime) - datetime.utcfromtimestamp(0)).days
+
 def extractInfoFromComment(comment, submission, subreddit):
      return    {
          'id' : comment.id,

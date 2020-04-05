@@ -10,6 +10,8 @@ import tensorflow as tf
 import pickle
 import praw
 from praw.models import MoreComments
+from pymongo import MongoClient
+import sys
 
 physical_devices = tf.config.list_physical_devices('GPU') 
 try: 
@@ -25,6 +27,12 @@ except:
 SECONDS_IN_MINUTE = 60
 MINUTES_IN_HOUR = 60
 SECONDS_IN_HOUR = SECONDS_IN_MINUTE * MINUTES_IN_HOUR
+
+#mongodb setup
+connection_string = "mongodb://localhost:27017" if len(sys.argv) == 1 else sys.argv[1]
+client = MongoClient(connection_string)
+db=client["reddit-comment-vote-predictor"]
+collection = db.comments
 
 #Mode which predicts votes
 model = rm.getmodelandweights()
@@ -103,7 +111,7 @@ def post_predict():
         text = [content['text']]
         subreddit = [content['subreddit']]
         if subreddit[0] > 0 and subreddit[0] <= len(rd.subreddit_list):
-            predictions = rm.getprediction(model, title, time, subreddit, text)
+            predictions = rm.getprediction(model, title, time, subreddit, text, collection)
             answer = {"prediction": predictions[0]}
         else:
             answer = {"error": "Subreddit must be an integer between 1 and " + str(len(rd.subreddit_list))}
@@ -122,7 +130,7 @@ def post_predict_day():
         subreddit = content['subreddit']
         if subreddit > 0 and subreddit <= len(rd.subreddit_list):
             titles, times, subreddits, texts = rd.dailydata(title, time, subreddit, text)
-            predictions = rm.getprediction(model, titles, times, subreddits, texts)
+            predictions = rm.getprediction(model, titles, times, subreddits, texts, collection)
             answer = {"times": times, "predictions": predictions}
         else:
             answer = {"error": "Subreddit must be an integer between 1 and " + str(len(rd.subreddit_list))}
